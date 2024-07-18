@@ -1,0 +1,109 @@
+
+function createAnalyze() {
+
+    function getExploreName(){
+        var userAgent = navigator.userAgent;
+        if(userAgent.indexOf("Opera") > -1 || userAgent.indexOf("OPR") > -1){
+            return 'Opera';
+        }
+        else if(userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1){
+            return 'IE';
+        }
+        else if(userAgent.indexOf("Edge") > -1){
+            return 'Edge';
+        }
+        else if(userAgent.indexOf("Firefox") > -1){
+            return 'Firefox';
+        }
+        else if(userAgent.indexOf("Safari") > -1 && userAgent.indexOf("Chrome") == -1){
+            return 'Safari';
+        }
+        else if(userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Safari") > -1){
+            return 'Chrome';
+        }
+        else if(!!window.ActiveXObject || "ActiveXObject" in window){
+            return 'IE>=11';
+        }
+        else{
+            return 'Unkonwn';
+        }
+    }
+    function formPost(url, paramsObj) {
+        var xmlhttp;
+        if (window.XMLHttpRequest)
+        {
+            //  IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+            xmlhttp=new XMLHttpRequest();
+        }
+        else
+        {
+            // IE6, IE5 浏览器执行代码
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        xmlhttp.open("POST",url,true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify(paramsObj))
+    }
+    var application="hj-mm";
+    var channel = "默认"
+    var domain = document.location.protocol +"//" + document.location.host;
+    var machine = getExploreName();
+    var eventUrl='https://maskanalyse.com/node/event';
+    var heartbeatUrl='https://maskanalyse.com/node/heartbeat';
+    if(window[application]){
+        return
+    }
+    window[application] = true;
+    var fromDomain=getReferrer();
+    function  getReferrer(){
+        var ref=document.referrer;
+        if( window.location.href == ref){
+            return null;
+        }
+        ref = decodeURIComponent(ref.split("?")[0]);
+
+        if(ref == domain){
+            return null;
+        }
+        return ref;
+    }
+    function onEvent() {
+        var url=decodeURIComponent( window.location.href.split("?")[0]);
+        formPost(eventUrl,{
+            url:url,
+            application:application,
+            fromDomain:fromDomain,
+            domain:domain,
+            machine:machine,
+            channel:channel,
+        });
+    }
+    var heartbeatTtl = 300;
+    function heartbeat(){
+        formPost(heartbeatUrl,{
+            application:application,
+            domain:domain,
+            machine:machine,
+            channel:channel,
+            ttl:heartbeatTtl
+        });
+    }
+    var root='';
+    function onChange(){
+        var href = window.location.href;
+        if(root != href){
+            onEvent();
+            root= href;
+        }
+
+    }
+
+    onChange();
+    setInterval(heartbeat,heartbeatTtl*500);
+
+    setInterval(function () {
+        onChange();
+    },1000)
+}
+createAnalyze();

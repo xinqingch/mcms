@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>小学数学出题</title>
+	<style>
+	body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 1em;
+}
+
+.options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 1em;
+}
+
+.questions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 1em;
+}
+
+.question {
+    margin: 0.5em;
+    padding: 0.5em;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 45%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .question {
+        width: 100%;
+    }
+}
+
+	</style>
+    <title>小学数学出题器</title>
+</head>
+<body>
+    <div class="header">
+        <h1>小学数学出题器</h1>
+    </div>
+    <div class="options">
+        <label>
+            <input type="checkbox" id="additionCheckbox" checked> 加法
+        </label>
+        <label>
+            <input type="checkbox" id="subtractionCheckbox" checked> 减法
+        </label>
+        <label>
+            <input type="checkbox" id="multiplicationCheckbox" checked> 乘法
+        </label>
+        <label>
+            <input type="checkbox" id="divisionCheckbox" checked> 除法
+        </label>
+
+        <label for="numDigits">数字个数：</label>
+        <input type="number" id="numDigits" value="2" min="1">
+
+        <label for="numQuestions">出题数量：</label>
+        <input type="number" id="numQuestions" value="10" min="1">
+
+        <label for="minNumber">最小数字：</label>
+        <input type="number" id="minNumber" value="1" min="1">
+
+        <label for="maxNumber">最大数字：</label>
+        <input type="number" id="maxNumber" value="10" min="1">
+
+        <button onclick="generateQuestions()">生成题目</button>
+        <button onclick="printQuestions()">一键打印</button>
+    </div>
+	<div class="qbox">
+    <div class="questions" id="questionsContainer">
+        <!-- 题目展示在这里 -->
+    </div></div>
+	<script>
+	function generateQuestions() {
+    const addition = document.getElementById('additionCheckbox').checked;
+    const subtraction = document.getElementById('subtractionCheckbox').checked;
+    const multiplication = document.getElementById('multiplicationCheckbox').checked;
+    const division = document.getElementById('divisionCheckbox').checked;
+
+    const numDigits = parseInt(document.getElementById('numDigits').value);
+    const numQuestions = parseInt(document.getElementById('numQuestions').value);
+    const minNumber = parseInt(document.getElementById('minNumber').value);
+    const maxNumber = parseInt(document.getElementById('maxNumber').value);
+
+    const questionsContainer = document.getElementById('questionsContainer');
+    questionsContainer.innerHTML = '';
+
+    for (let i = 0; i < numQuestions; i++) {
+        const questionElement = document.createElement('div');
+        questionElement.className = 'question';
+
+        const question = generateQuestion(addition, subtraction, multiplication, division, numDigits, minNumber, maxNumber);
+        questionElement.textContent = `题${i + 1}: ${question}=______`;
+        questionsContainer.appendChild(questionElement);
+    }
+}
+
+function generateQuestion(addition, subtraction, multiplication, division, numDigits, minNumber, maxNumber) {
+    const numbers = [];
+    for (let i = 0; i < numDigits; i++) {
+        const randomNum = Math.floor(Math.random() * (maxNumber - minNumber + 1)) + minNumber;
+        numbers.push(randomNum);
+    }
+
+    const operators = [];
+    if (addition) operators.push('+');
+    if (subtraction) operators.push('-');
+    if (multiplication) operators.push('*');
+    if (division) operators.push('÷');
+
+    const operator = operators[Math.floor(Math.random() * operators.length)];
+
+    let question = numbers.join(` ${operator} `);
+
+    if (operator === '÷') {
+        const result = numbers.reduce((a, b) => a / b);
+        if (result % 1 !== 0 || result < 0) {
+            return generateQuestion(addition, subtraction, multiplication, division, numDigits, minNumber, maxNumber);
+        }
+    } else if (operator === '-') {
+        const result = numbers.reduce((a, b) => a - b);
+        if (result < 0) {
+            return generateQuestion(addition, subtraction, multiplication, division, numDigits, minNumber, maxNumber);
+        }
+    }
+
+    return question;
+}
+
+function printQuestions() {
+    window.print();
+}
+
+	</script>
+</body>
+</html>
